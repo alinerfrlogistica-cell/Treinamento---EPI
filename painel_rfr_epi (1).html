@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Gestão · EPI NR-06 | RFR Indy</title>
+<style>
+:root{--orange:#E85D04;--orange-dark:#9D2E00;--orange-light:#FFF0E6;--dark:#1A1A1A;--gray:#6B6B6B;--gray-light:#F4F4F4;--white:#FFFFFF;--green:#2D9E5A;--green-light:#EAF7EF;--red:#C0392B;--red-light:#FDEAEA;--yellow:#F59E0B;--radius:10px;--shadow:0 1px 8px rgba(0,0,0,0.08);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F0EE;color:var(--dark);min-height:100vh;}
+.header{background:var(--orange-dark);padding:0 32px;display:flex;align-items:center;height:60px;gap:16px;}
+.header-logo{font-weight:800;font-size:20px;color:white;}
+.header-logo span{color:rgba(255,255,255,0.55);font-weight:400;font-size:13px;margin-left:8px;}
+.header-tag{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.9);font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:0.8px;}
+.header-right{margin-left:auto;}
+.btn-refresh{background:rgba(255,255,255,0.15);color:white;border:none;border-radius:var(--radius);padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-refresh:hover{background:rgba(255,255,255,0.25);}
+.container{max-width:1100px;margin:0 auto;padding:28px 24px;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.stat-card{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+.sc-label{font-size:12px;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);font-weight:600;margin-bottom:8px;}
+.sc-value{font-size:32px;font-weight:800;line-height:1;}
+.sc-sub{font-size:12px;color:var(--gray);margin-top:6px;}
+.panel{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:24px;}
+.panel-header{padding:18px 24px;border-bottom:1px solid #EBEBEA;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.panel-header h2{font-size:16px;font-weight:700;}
+.panel-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.btn-export{background:var(--orange);color:white;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-export:hover{background:var(--orange-dark);}
+.btn-outline{background:var(--white);color:var(--dark);border:1.5px solid #DDDDD8;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
+.btn-outline:hover{background:var(--gray-light);}
+.filters{padding:14px 24px;border-bottom:1px solid #EBEBEA;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.filters input,.filters select{border:1.5px solid #E0E0DD;border-radius:8px;padding:7px 12px;font-size:13px;font-family:inherit;outline:none;background:var(--white);}
+.filters input:focus,.filters select:focus{border-color:var(--orange);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;font-size:11px;text-transform:uppercase;letter-spacing:0.7px;color:var(--gray);font-weight:700;text-align:left;border-bottom:1.5px solid #EBEBEA;white-space:nowrap;background:var(--gray-light);}
+tbody tr{border-bottom:1px solid #F4F4F2;}
+tbody tr:hover{background:#FAFAF8;}
+tbody td{padding:13px 16px;font-size:14px;vertical-align:middle;}
+.td-nome{font-weight:600;}
+.td-cargo{color:var(--gray);font-size:13px;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;}
+.badge-a{background:var(--green-light);color:#1A5C36;}
+.badge-r{background:var(--red-light);color:#7B1A13;}
+.pct-bar{display:flex;align-items:center;gap:8px;}
+.pct-track{flex:1;height:6px;background:#E8E8E6;border-radius:3px;min-width:60px;}
+.pct-fill{height:6px;border-radius:3px;}
+.pct-num{font-size:13px;font-weight:700;min-width:36px;text-align:right;}
+.btn-row{background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;font-size:13px;color:var(--orange);font-weight:600;font-family:inherit;}
+.btn-row:hover{background:var(--orange-light);}
+.empty-state{padding:64px 24px;text-align:center;color:var(--gray);}
+.empty-state .es-icon{font-size:48px;display:block;margin-bottom:16px;}
+.loading{padding:48px 24px;text-align:center;color:var(--gray);font-size:15px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:white;border-radius:14px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.2);}
+.modal-header{padding:20px 24px;border-bottom:1px solid #EBEBEA;display:flex;align-items:center;justify-content:space-between;}
+.modal-header h3{font-size:18px;font-weight:700;}
+.btn-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--gray);line-height:1;padding:4px;}
+.modal-body{padding:24px;}
+.cert-print{border:3px solid var(--orange);border-radius:14px;padding:32px;text-align:center;}
+.cp-logo{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--orange);font-weight:700;margin-bottom:12px;}
+.cert-print h2{font-size:22px;font-weight:800;margin-bottom:4px;}
+.cp-sub{font-size:13px;color:var(--gray);margin-bottom:20px;}
+.cp-name{font-size:26px;font-weight:800;color:var(--orange-dark);margin:14px 0 4px;}
+.cp-cargo{font-size:14px;color:var(--gray);margin-bottom:18px;}
+.cp-score{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;background:var(--orange);color:white;border-radius:50%;width:72px;height:72px;font-size:22px;font-weight:800;margin-bottom:10px;}
+.cp-score small{font-size:10px;font-weight:400;}
+.cp-status{font-size:15px;font-weight:700;margin-bottom:6px;}
+.cp-date{font-size:13px;color:var(--gray);margin-bottom:18px;}
+.cp-footer{font-size:11px;color:#aaa;border-top:1px solid #eee;padding-top:14px;line-height:1.6;}
+.print-btn-wrap{margin-top:16px;}
+.print-btn{background:var(--orange);color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;}
+.prova-item{margin-bottom:16px;padding:16px;border-radius:var(--radius);border:1.5px solid;}
+.prova-item.acerto{border-color:var(--green);background:var(--green-light);}
+.prova-item.erro{border-color:var(--red);background:var(--red-light);}
+.prova-q{font-size:14px;font-weight:700;margin-bottom:8px;}
+.prova-resp{font-size:13px;margin:3px 0;}
+.prova-resp.certa{color:var(--green);font-weight:700;}
+.prova-resp.errada{color:var(--red);text-decoration:line-through;}
+@media(max-width:700px){.stats-row{grid-template-columns:1fr 1fr;}.container{padding:16px 12px;}.header{padding:0 16px;}}
+@media print{body{background:white;}.header,.stats-row,.panel-header,.filters,.panel-actions,.btn-row,.print-btn-wrap,.modal-header{display:none!important;}.modal-overlay{position:static;display:block!important;background:none;padding:0;}.modal{box-shadow:none;max-height:none;}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-logo">RFR Indy <span>Painel de Gestão</span></div>
+  <div class="header-tag">SSMA · NR-06</div>
+  <div class="header-right"><button class="btn-refresh" onclick="loadData()">↻ Atualizar</button></div>
+</div>
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-card"><div class="sc-label">Total de Realizações</div><div class="sc-value" id="stat-total" style="color:var(--orange)">—</div><div class="sc-sub">desde o início</div></div>
+    <div class="stat-card"><div class="sc-label">Aprovados</div><div class="sc-value" id="stat-aprovados" style="color:var(--green)">—</div><div class="sc-sub" id="stat-pct">—</div></div>
+    <div class="stat-card"><div class="sc-label">Reprovados</div><div class="sc-value" id="stat-reprovados" style="color:var(--red)">—</div><div class="sc-sub">precisam refazer</div></div>
+    <div class="stat-card"><div class="sc-label">Média de Acertos</div><div class="sc-value" id="stat-media" style="color:var(--orange)">—</div><div class="sc-sub">geral da turma</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Resultados por Motorista</h2>
+      <div class="panel-actions">
+        <button class="btn-outline" onclick="exportCSV()">⬇ Exportar CSV</button>
+        <button class="btn-export" onclick="exportRelatorio()">📄 Relatório Completo</button>
+      </div>
+    </div>
+    <div class="filters">
+      <span style="font-size:12px;color:var(--gray);font-weight:600;">Filtrar:</span>
+      <input type="text" id="filtro-nome" placeholder="Nome do motorista..." oninput="renderTabela()" style="width:200px;">
+      <select id="filtro-status" onchange="renderTabela()">
+        <option value="">Todos os status</option>
+        <option value="1">Aprovados</option>
+        <option value="0">Reprovados</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Motorista</th><th>Data</th><th>Pontuação</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody id="tabela-body"></tbody>
+      </table>
+      <div id="empty-state" class="empty-state" style="display:none;"><span class="es-icon">📋</span><p>Nenhum resultado ainda.<br>Os motoristas precisam concluir o treinamento.</p></div>
+      <div id="loading-state" class="loading">🔄 Carregando dados do Firebase...</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header"><h3 id="modal-title">Detalhes</h3><button class="btn-close" onclick="closeModal()">×</button></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, getDocs, orderBy, query } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCPxw2L39B3Zbe6SWGSBlmOSCI3AmOByaI",
+  authDomain: "treinamento-epi.firebaseapp.com",
+  projectId: "treinamento-epi",
+  storageBucket: "treinamento-epi.firebasestorage.app",
+  messagingSenderId: "343697080767",
+  appId: "1:343697080767:web:9fe77e1eadcc1afe1ce10a"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+var allData = [], filteredData = [];
+
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+window.loadData = async function(){
+  document.getElementById('loading-state').style.display='block';
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('tabela-body').innerHTML='';
+  allData=[];
+  try{
+    const q = query(collection(db,'resultados_epi'), orderBy('timestamp','desc'));
+    const snap = await getDocs(q);
+    snap.forEach(function(doc){ allData.push(doc.data()); });
+  }catch(e){
+    // fallback sem ordenação
+    try{
+      const snap = await getDocs(collection(db,'resultados_epi'));
+      snap.forEach(function(doc){ allData.push(doc.data()); });
+      allData.sort(function(a,b){return (b.timestamp||0)-(a.timestamp||0);});
+    }catch(e2){
+      document.getElementById('loading-state').textContent='❌ Erro ao carregar: '+e2.message;
+      return;
+    }
+  }
+  document.getElementById('loading-state').style.display='none';
+  updateStats();renderTabela();
+};
+
+function updateStats(){
+  var t=allData.length, a=allData.filter(function(d){return d.aprovado;}).length;
+  var med=t>0?Math.round(allData.reduce(function(s,d){return s+(d.pontuacao||0);},0)/t):0;
+  document.getElementById('stat-total').textContent=t;
+  document.getElementById('stat-aprovados').textContent=a;
+  document.getElementById('stat-pct').textContent=(t>0?Math.round((a/t)*100):0)+'% de aprovação';
+  document.getElementById('stat-reprovados').textContent=t-a;
+  document.getElementById('stat-media').textContent=t?med+'%':'—';
+}
+
+window.renderTabela = function(){
+  var fn=document.getElementById('filtro-nome').value.toLowerCase();
+  var fs=document.getElementById('filtro-status').value;
+  filteredData=allData.filter(function(d){
+    return (d.nome||'').toLowerCase().includes(fn)&&(fs===''||(fs==='1'&&d.aprovado)||(fs==='0'&&!d.aprovado));
+  });
+  var tbody=document.getElementById('tabela-body');tbody.innerHTML='';
+  document.getElementById('empty-state').style.display=filteredData.length===0?'block':'none';
+  filteredData.forEach(function(d,i){
+    var cor=d.pontuacao>=80?'#2D9E5A':d.pontuacao>=60?'#F59E0B':'#C0392B';
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td><div class="td-nome">'+escHtml(d.nome)+'</div><div class="td-cargo">'+escHtml(d.cargo||'')+'</div></td>'
+      +'<td style="font-size:13px;white-space:nowrap;color:#666;">'+escHtml(d.dataFormatada||'')+'</td>'
+      +'<td><div class="pct-bar"><div class="pct-track"><div class="pct-fill" style="width:'+(d.pontuacao||0)+'%;background:'+cor+'"></div></div><span class="pct-num" style="color:'+cor+'">'+(d.pontuacao||0)+'%</span></div></td>'
+      +'<td><span class="badge '+(d.aprovado?'badge-a':'badge-r')+'">'+(d.aprovado?'✅ Aprovado':'❌ Reprovado')+'</span></td>'
+      +'<td style="white-space:nowrap;"><button class="btn-row" onclick="verProva('+i+')">Ver Prova</button> <button class="btn-row" onclick="verCertificado('+i+')">Certificado</button></td>';
+    tbody.appendChild(tr);
+  });
+};
+
+window.verProva = function(i){
+  var d=filteredData[i];
+  var html='<div style="background:var(--gray-light);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;">'
+    +'<strong>'+escHtml(d.nome)+'</strong> · '+escHtml(d.cargo||'')+'<br>'
+    +'<span style="font-size:13px;color:var(--gray);">'+escHtml(d.dataFormatada||'')+'</span> · '
+    +'<span style="font-size:13px;font-weight:700;color:'+(d.aprovado?'var(--green)':'var(--red)')+';">'+(d.aprovado?'APROVADO':'REPROVADO')+' — '+(d.pontuacao||0)+'%</span></div>';
+  var respostas=d.respostas||[];
+  if(respostas.length>0){
+    respostas.forEach(function(r,n){
+      html+='<div class="prova-item '+(r.acertou?'acerto':'erro')+'">'
+        +'<div class="prova-q">'+(n+1)+'. '+escHtml(r.pergunta)+'</div>'
+        +'<div class="prova-resp '+(r.acertou?'certa':'errada')+'">→ Respondeu: '+escHtml(r.escolhida)+'</div>'
+        +(!r.acertou?'<div class="prova-resp certa">✓ Correta: '+escHtml(r.correta)+'</div>':'')
+        +'</div>';
+    });
+  } else {
+    html+='<p style="color:var(--gray);text-align:center;padding:20px;">Detalhes não disponíveis.</p>';
+  }
+  html+='<div class="print-btn-wrap"><button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>';
+  openModal('Gabarito — '+d.nome, html);
+};
+
+window.verCertificado = function(i){
+  var d=filteredData[i];
+  var html='<div class="cert-print">'
+    +'<div class="cp-logo">RFR Indy · SSMA · Saúde, Segurança e Meio Ambiente</div>'
+    +'<h2>Certificado de '+(d.aprovado?'Conclusão':'Participação')+'</h2>'
+    +'<div class="cp-sub">Treinamento de Equipamentos de Proteção Individual — NR-06 · 2025</div>'
+    +'<div style="width:48px;height:2px;background:var(--orange);margin:0 auto 20px;"></div>'
+    +'<div style="font-size:14px;color:var(--gray);">Certificamos que</div>'
+    +'<div class="cp-name">'+escHtml(d.nome)+'</div>'
+    +'<div class="cp-cargo">'+escHtml(d.cargo||'')+'</div>'
+    +'<div style="font-size:14px;color:var(--gray);margin-bottom:14px;">concluiu com a seguinte pontuação:</div>'
+    +'<div class="cp-score"><span>'+(d.pontuacao||0)+'%</span><small>Acertos</small></div>'
+    +'<div class="cp-status" style="color:'+(d.aprovado?'var(--green)':'var(--red)')+';">'+(d.aprovado?'✅ APROVADO — '+d.acertos+'/'+d.total+' questões':'⚠️ PARTICIPOU — '+d.acertos+'/'+d.total+' questões')+'</div>'
+    +'<div class="cp-date">'+escHtml(d.dataFormatada||'')+'</div>'
+    +'<div class="cp-footer">RFR Indy Recycling Com. Resíduos Ltda · CNPJ 02.298.244/0001-28<br>Setor SSMA · Saúde, Segurança do Trabalho e Meio Ambiente</div>'
+    +'</div>'
+    +'<div class="print-btn-wrap"><button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button></div>';
+  openModal('Certificado — '+d.nome, html);
+};
+
+window.exportCSV = function(){
+  if(!allData.length){alert('Nenhum dado para exportar.');return;}
+  var rows=[['Nome','Cargo','Data','Pontuação (%)','Acertos','Total','Status']];
+  allData.forEach(function(d){rows.push(['"'+(d.nome||'')+'"','"'+(d.cargo||'')+'"','"'+(d.dataFormatada||'')+'"',(d.pontuacao||0),(d.acertos||0),(d.total||5),d.aprovado?'Aprovado':'Reprovado']);});
+  var csv=rows.map(function(r){return r.join(';');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='resultados_epi_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+};
+
+window.exportRelatorio = function(){
+  if(!allData.length){alert('Nenhum dado para exportar.');return;}
+  var t=allData.length,a=allData.filter(function(d){return d.aprovado;}).length;
+  var med=Math.round(allData.reduce(function(s,d){return s+(d.pontuacao||0);},0)/t);
+  var hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  var html='<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Relatório EPI NR-06 · RFR</title>'
+    +'<style>body{font-family:Segoe UI,sans-serif;color:#1A1A1A;padding:40px;max-width:900px;margin:0 auto;}'
+    +'.rh{text-align:center;border-bottom:3px solid #E85D04;padding-bottom:20px;margin-bottom:28px;}'
+    +'.rh h1{font-size:22px;font-weight:800;}.rh p{color:#666;font-size:13px;margin-top:4px;}'
+    +'.stats{display:flex;gap:20px;margin-bottom:28px;}.sc{flex:1;background:#F4F4F2;border-radius:10px;padding:16px;text-align:center;}'
+    +'.sc .v{font-size:28px;font-weight:800;}.sc .l{font-size:12px;color:#666;text-transform:uppercase;margin-top:4px;}'
+    +'table{width:100%;border-collapse:collapse;font-size:13px;}th{background:#F4F4F2;padding:10px 14px;text-align:left;border-bottom:2px solid #E0E0DD;font-weight:700;}'
+    +'td{padding:10px 14px;border-bottom:1px solid #F0F0EE;}.ok{color:#2D9E5A;font-weight:700;}.nok{color:#C0392B;font-weight:700;}'
+    +'@media print{button{display:none;}}</style></head><body>'
+    +'<div class="rh"><h1>Relatório de Treinamento EPI — NR-06</h1>'
+    +'<p>RFR Indy Recycling Com. Resíduos Ltda · CNPJ 02.298.244/0001-28 · Setor SSMA</p>'
+    +'<p>Emitido em '+hoje+'</p></div>'
+    +'<div class="stats">'
+    +'<div class="sc"><div class="v">'+t+'</div><div class="l">Realizações</div></div>'
+    +'<div class="sc"><div class="v" style="color:#2D9E5A">'+a+'</div><div class="l">Aprovados</div></div>'
+    +'<div class="sc"><div class="v" style="color:#C0392B">'+(t-a)+'</div><div class="l">Reprovados</div></div>'
+    +'<div class="sc"><div class="v" style="color:#E85D04">'+med+'%</div><div class="l">Média Geral</div></div>'
+    +'</div><table><tr><th>Nome</th><th>Cargo</th><th>Data</th><th>Pontuação</th><th>Acertos</th><th>Status</th></tr>';
+  allData.forEach(function(d){
+    html+='<tr><td><strong>'+escHtml(d.nome||'')+'</strong></td><td>'+escHtml(d.cargo||'')+'</td><td>'+escHtml(d.dataFormatada||'')+'</td><td>'+(d.pontuacao||0)+'%</td><td>'+(d.acertos||0)+'/'+(d.total||5)+'</td><td class="'+(d.aprovado?'ok':'nok')+'">'+(d.aprovado?'✅ Aprovado':'❌ Reprovado')+'</td></tr>';
+  });
+  html+='</table><p style="margin-top:28px;font-size:11px;color:#999;text-align:center;">Gerado automaticamente · RFR Indy · NR-06 · SSMA</p>'
+    +'<div style="text-align:center;margin-top:20px;"><button onclick="window.print()" style="background:#E85D04;color:white;border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;">🖨️ Imprimir / Salvar PDF</button></div>'
+    +'</body></html>';
+  var blob=new Blob([html],{type:'text/html;charset=utf-8;'});
+  window.open(URL.createObjectURL(blob),'_blank');
+};
+
+function openModal(title,html){document.getElementById('modal-title').textContent=title;document.getElementById('modal-body').innerHTML=html;document.getElementById('modal').classList.add('open');}
+window.closeModal = function(e){if(!e||e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');};
+
+loadData();
+</script>
+</body>
+</html>
