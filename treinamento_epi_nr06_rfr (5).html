@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Treinamento EPI NR-06 | RFR Indy</title>
+<style>
+:root{--orange:#E85D04;--orange-dark:#9D2E00;--orange-light:#FFF0E6;--dark:#1A1A1A;--gray:#6B6B6B;--gray-light:#F4F4F2;--white:#FFFFFF;--green:#2D9E5A;--green-light:#EAF7EF;--red:#C0392B;--red-light:#FDEAEA;--teal:#1A6B4A;--radius:12px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#F0F0EE;color:var(--dark);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+#app{width:100%;max-width:480px;min-height:100vh;background:var(--white);display:flex;flex-direction:column;}
+.header{background:var(--orange);padding:16px 20px 14px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+.header-logo{font-weight:800;font-size:18px;color:white;}
+.header-logo span{color:rgba(255,255,255,0.6);font-weight:400;font-size:13px;display:block;margin-top:1px;}
+.header-badge{margin-left:auto;background:rgba(255,255,255,0.2);color:white;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;text-transform:uppercase;}
+.progress-bar-wrap{background:#E0E0DE;height:4px;}
+.progress-bar-fill{height:4px;background:var(--orange);transition:width 0.4s ease;}
+.screen{display:none;flex-direction:column;flex:1;}
+.screen.active{display:flex;}
+.hero{background:linear-gradient(160deg,var(--orange),var(--orange-dark));padding:40px 24px 36px;text-align:center;color:white;}
+.hero .icon{font-size:56px;margin-bottom:16px;display:block;}
+.hero h1{font-size:26px;font-weight:800;line-height:1.2;margin-bottom:8px;}
+.hero p{font-size:14px;opacity:0.85;line-height:1.6;max-width:300px;margin:0 auto;}
+.form-body{padding:28px 20px;flex:1;}
+.form-body label{display:block;font-size:13px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;}
+.form-body input{width:100%;border:2px solid #E0E0DD;border-radius:var(--radius);padding:14px 16px;font-size:16px;font-family:inherit;outline:none;transition:border-color 0.2s;margin-bottom:20px;}
+.form-body input:focus{border-color:var(--orange);}
+.form-body input.error{border-color:var(--red);}
+.error-msg{color:var(--red);font-size:13px;margin-top:-14px;margin-bottom:16px;display:none;}
+.welcome-body{padding:24px 20px;flex:1;}
+.info-cards{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.info-card{background:var(--gray-light);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;}
+.ic-icon{width:40px;height:40px;background:var(--orange-light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.ic-text strong{display:block;font-size:14px;font-weight:600;margin-bottom:2px;}
+.ic-text span{font-size:12px;color:var(--gray);}
+.btn-main{background:var(--orange);color:white;border:none;border-radius:var(--radius);padding:16px;width:100%;font-size:16px;font-weight:700;cursor:pointer;transition:background 0.2s;}
+.btn-main:active{background:var(--orange-dark);}
+.btn-secondary{background:var(--gray-light);color:var(--dark);border:none;border-radius:var(--radius);padding:14px;width:100%;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px;}
+.menu-header{background:var(--orange);color:white;padding:20px;}
+.menu-header h2{font-size:20px;font-weight:800;}
+.menu-header p{font-size:13px;opacity:0.8;margin-top:4px;}
+.module-list{padding:12px 16px;flex:1;overflow-y:auto;}
+.module-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--gray-light);border-radius:var(--radius);margin-bottom:10px;cursor:pointer;border:2px solid transparent;}
+.module-item.done{border-color:var(--green);}
+.module-item.current{border-color:var(--orange);background:var(--orange-light);}
+.mod-icon{width:44px;height:44px;background:white;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.mod-info strong{display:block;font-size:14px;font-weight:700;}
+.mod-info span{font-size:12px;color:var(--gray);margin-top:2px;display:block;}
+.mod-status{margin-left:auto;font-size:18px;flex-shrink:0;}
+.lesson-top{padding:16px 20px 12px;border-bottom:1px solid #EBEBEA;}
+.step-label{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--orange);font-weight:700;margin-bottom:4px;}
+.lesson-top h2{font-size:18px;font-weight:700;line-height:1.3;}
+.lesson-body{padding:20px;flex:1;overflow-y:auto;}
+.lesson-content{display:none;}
+.lesson-content.active{display:block;}
+.content-text{font-size:15px;line-height:1.75;margin-bottom:16px;}
+.highlight-box{background:var(--orange-light);border-left:4px solid var(--orange);border-radius:0 var(--radius) var(--radius) 0;padding:14px 16px;margin:16px 0;font-size:14px;line-height:1.6;color:var(--orange-dark);font-weight:500;}
+.highlight-box.green{background:var(--green-light);border-color:var(--green);color:#1A5C36;}
+.highlight-box.red{background:var(--red-light);border-color:var(--red);color:#7B1A13;}
+.epi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0;}
+.epi-item{background:var(--gray-light);border-radius:var(--radius);padding:14px 12px;text-align:center;}
+.epi-emoji{font-size:28px;display:block;margin-bottom:6px;}
+.epi-name{font-size:12px;font-weight:600;line-height:1.3;}
+.epi-risk{font-size:11px;color:var(--gray);margin-top:3px;}
+.resp-block{background:var(--gray-light);border-radius:var(--radius);padding:16px;margin:10px 0;}
+.rb-title{font-size:12px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;color:var(--orange);margin-bottom:10px;}
+.resp-block ul{list-style:none;padding:0;}
+.resp-block ul li{font-size:14px;padding:5px 0 5px 22px;position:relative;line-height:1.5;border-bottom:0.5px solid #E0E0DD;}
+.resp-block ul li:last-child{border-bottom:none;}
+.resp-block ul li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:700;}
+.lesson-nav{padding:16px 20px;border-top:1px solid #EBEBEA;display:flex;gap:10px;}
+.btn-prev{background:var(--gray-light);color:var(--dark);border:none;border-radius:var(--radius);padding:14px 18px;font-size:15px;font-weight:600;cursor:pointer;flex-shrink:0;}
+.btn-next{background:var(--orange);color:white;border:none;border-radius:var(--radius);padding:14px;font-size:15px;font-weight:700;cursor:pointer;flex:1;}
+.quiz-header{padding:20px 20px 12px;border-bottom:1px solid #EBEBEA;}
+.quiz-counter{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--orange);font-weight:700;margin-bottom:6px;}
+.quiz-question{font-size:17px;font-weight:700;line-height:1.4;}
+.quiz-body{padding:20px;flex:1;}
+.quiz-options{display:flex;flex-direction:column;gap:10px;}
+.quiz-option{background:var(--gray-light);border:2px solid transparent;border-radius:var(--radius);padding:16px;font-size:15px;font-weight:500;cursor:pointer;text-align:left;line-height:1.4;font-family:inherit;}
+.quiz-option.correct{border-color:var(--green);background:var(--green-light);color:#1A5C36;}
+.quiz-option.wrong{border-color:var(--red);background:var(--red-light);color:#7B1A13;}
+.quiz-feedback{margin-top:16px;padding:14px 16px;border-radius:var(--radius);font-size:14px;line-height:1.6;display:none;font-weight:500;}
+.quiz-feedback.correct{background:var(--green-light);color:#1A5C36;}
+.quiz-feedback.wrong{background:var(--red-light);color:#7B1A13;}
+.quiz-nav{padding:16px 20px;border-top:1px solid #EBEBEA;}
+/* CERTIFICADO TELA */
+.cert-screen{flex:1;display:flex;flex-direction:column;align-items:center;padding:24px 20px;text-align:center;overflow-y:auto;}
+.cert-trophy{font-size:56px;margin-bottom:12px;}
+.cert-screen h2{font-size:22px;font-weight:800;margin-bottom:6px;}
+.cert-sub{font-size:14px;color:var(--gray);margin-bottom:20px;line-height:1.6;}
+.saving-msg{font-size:13px;padding:10px 16px;border-radius:8px;margin-bottom:12px;background:var(--gray-light);color:var(--gray);width:100%;text-align:center;}
+.saving-msg.ok{background:var(--green-light);color:#1A5C36;}
+.saving-msg.err{background:var(--red-light);color:#7B1A13;}
+/* ASSINATURA */
+.assinatura-box{width:100%;margin-bottom:12px;}
+.assinatura-label{font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;text-align:left;}
+.assinatura-canvas-wrap{border:2px dashed #DDDDD8;border-radius:var(--radius);background:white;position:relative;overflow:hidden;}
+#assinatura-canvas{display:block;width:100%;height:100px;cursor:crosshair;touch-action:none;}
+.assinatura-hint{font-size:11px;color:#BBBBBA;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;text-align:center;white-space:nowrap;}
+.assinatura-clear{background:none;border:none;font-size:12px;color:var(--gray);cursor:pointer;padding:4px 0;display:block;text-align:right;width:100%;}
+
+/* ============ CERTIFICADO PARA IMPRESSÃO ============ */
+#cert-print-area{display:none;}
+
+@media print{
+  #app, .header, .progress-bar-wrap, body > *{display:none!important;}
+  #cert-print-area{display:block!important;position:fixed;inset:0;background:white;z-index:9999;}
+  @page{size:A4 landscape;margin:0;}
+}
+
+/* Estilos do certificado impresso */
+.cert-doc{width:297mm;min-height:210mm;background:white;font-family:'Segoe UI',Arial,sans-serif;position:relative;overflow:hidden;}
+.cert-doc .top-bar{background:#1A1A1A;color:white;text-align:center;padding:8px 20px;}
+.cert-doc .top-bar .empresa{font-size:13px;font-weight:700;color:#E85D04;}
+.cert-doc .top-bar .cnpj{font-size:10px;color:#BBBBBB;margin-top:2px;}
+.cert-doc .cert-body{padding:28px 48px 20px;position:relative;}
+.cert-doc .cert-logos{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.cert-doc .sesmt-badge{width:64px;height:64px;background:var(--teal);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-size:7px;font-weight:700;text-align:center;line-height:1.3;letter-spacing:0.5px;}
+.cert-doc .sesmt-badge .cross{font-size:20px;display:block;margin-bottom:2px;}
+.cert-doc .rfr-badge{font-size:22px;font-weight:900;color:var(--orange);letter-spacing:-1px;}
+.cert-doc .rfr-badge small{display:block;font-size:9px;color:var(--gray);font-weight:500;letter-spacing:1px;text-transform:uppercase;}
+.cert-doc .cert-title{font-size:42px;font-weight:800;color:var(--teal);text-align:center;margin-bottom:20px;font-family:Georgia,serif;}
+.cert-doc .cert-divider{width:60px;height:3px;background:var(--teal);margin:0 auto 20px;}
+.cert-doc .cert-texto{font-size:13px;color:#333;text-align:center;line-height:1.8;margin-bottom:8px;}
+.cert-doc .cert-nome{font-size:32px;font-weight:800;color:var(--dark);text-align:center;margin:10px 0 4px;text-transform:uppercase;}
+.cert-doc .cert-cargo-label{font-size:13px;color:var(--gray);text-align:center;margin-bottom:12px;}
+.cert-doc .cert-treinamento{font-size:15px;font-weight:700;color:var(--dark);text-align:center;margin:8px 0;}
+.cert-doc .cert-info{font-size:12px;color:#555;text-align:center;line-height:1.8;margin-bottom:8px;}
+.cert-doc .cert-local-data{display:flex;align-items:center;justify-content:space-between;margin:16px 0 20px;}
+.cert-doc .cert-local-data .data-txt{font-size:13px;color:#444;}
+.cert-doc .cert-aproveitamento{background:var(--orange);color:white;border-radius:8px;padding:8px 16px;text-align:center;}
+.cert-doc .cert-aproveitamento .pct{font-size:24px;font-weight:800;}
+.cert-doc .cert-aproveitamento .pct-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;opacity:0.9;}
+.cert-doc .assinaturas{display:flex;justify-content:space-between;align-items:flex-end;margin-top:8px;padding-top:8px;}
+.cert-doc .ass-col{text-align:center;width:45%;}
+.cert-doc .ass-linha{width:100%;border-top:1.5px solid #333;margin-bottom:6px;}
+.cert-doc .ass-img{width:100%;height:50px;object-fit:contain;display:block;margin-bottom:2px;}
+.cert-doc .ass-nome{font-size:12px;font-weight:700;color:#1A1A1A;}
+.cert-doc .ass-info{font-size:10px;color:#555;line-height:1.5;}
+.cert-doc .bottom-bar{background:#1A1A1A;color:#AAAAAA;text-align:center;padding:7px 20px;font-size:9px;line-height:1.7;position:absolute;bottom:0;left:0;right:0;}
+.cert-doc .bottom-bar span{color:var(--orange);}
+.cert-doc .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:80px;font-weight:900;color:rgba(26,107,74,0.04);white-space:nowrap;pointer-events:none;letter-spacing:-2px;}
+
+/* VERSO - CONTEÚDO PROGRAMÁTICO */
+.cert-verso{width:297mm;min-height:210mm;background:white;font-family:'Segoe UI',Arial,sans-serif;page-break-before:always;}
+.cert-verso .vt-bar{background:#1A1A1A;color:white;text-align:center;padding:10px 20px;}
+.cert-verso .vt-bar h2{font-size:14px;font-weight:700;color:var(--orange);text-transform:uppercase;letter-spacing:1px;}
+.cert-verso .vt-bar p{font-size:10px;color:#BBBBBB;margin-top:3px;}
+.cert-verso .vt-body{padding:24px 40px;}
+.cert-verso .vt-logos{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.cert-verso .vt-title{font-size:24px;font-weight:800;color:var(--teal);text-align:center;margin-bottom:4px;}
+.cert-verso .vt-subtitle{font-size:12px;color:var(--gray);text-align:center;margin-bottom:20px;}
+.cert-verso .vt-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 40px;}
+.cert-verso .vt-item{}
+.cert-verso .vt-item h4{font-size:12px;font-weight:700;color:var(--teal);margin-bottom:4px;}
+.cert-verso .vt-item ul{list-style:none;padding:0;}
+.cert-verso .vt-item ul li{font-size:10.5px;color:#444;padding:1px 0 1px 14px;position:relative;line-height:1.5;}
+.cert-verso .vt-item ul li::before{content:'-';position:absolute;left:0;color:var(--gray);}
+.cert-verso .vt-footer{background:#1A1A1A;color:#AAAAAA;text-align:center;padding:8px 20px;font-size:9px;margin-top:auto;}
+.cert-verso .vt-footer span{color:var(--orange);}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-logo">RFR Indy<span>NR-06 · EPI</span></div>
+    <div class="header-badge" id="header-badge">Treinamento</div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+
+  <!-- IDENTIFICAÇÃO -->
+  <div class="screen active" id="screen-id">
+    <div class="hero"><span class="icon">⛑️</span><h1>Treinamento de EPI</h1><p>Equipamentos de Proteção Individual — NR-06 · RFR Indy · SSMA</p></div>
+    <div class="form-body">
+      <label>Seu nome completo</label>
+      <input type="text" id="input-nome" placeholder="Ex: João da Silva" autocomplete="name">
+      <div class="error-msg" id="err-nome">Por favor, informe seu nome completo.</div>
+      <label>Cargo / Função</label>
+      <input type="text" id="input-cargo" placeholder="Ex: Motorista">
+      <div class="error-msg" id="err-cargo">Por favor, informe seu cargo.</div>
+      <button class="btn-main" onclick="submitId()">Iniciar Treinamento →</button>
+    </div>
+  </div>
+
+  <!-- BOAS-VINDAS -->
+  <div class="screen" id="screen-welcome">
+    <div class="hero"><span class="icon">👋</span><h1 id="welcome-title">Olá!</h1><p>Siga os módulos em ordem e faça o quiz ao final para receber seu certificado.</p></div>
+    <div class="welcome-body">
+      <div class="info-cards">
+        <div class="info-card"><div class="ic-icon">📱</div><div class="ic-text"><strong>100% Online</strong><span>Faça pelo celular, onde estiver</span></div></div>
+        <div class="info-card"><div class="ic-icon">⏱️</div><div class="ic-text"><strong>~15 minutos</strong><span>5 módulos + quiz final</span></div></div>
+        <div class="info-card"><div class="ic-icon">🏆</div><div class="ic-text"><strong>Certificado Digital</strong><span>Com assinatura e conteúdo programático</span></div></div>
+      </div>
+      <button class="btn-main" onclick="goToMenu()">Ver Módulos →</button>
+    </div>
+  </div>
+
+  <!-- MENU -->
+  <div class="screen" id="screen-menu">
+    <div class="menu-header"><h2>Módulos</h2><p id="menu-nome-label"></p></div>
+    <div class="module-list">
+      <div class="module-item" id="mod-0" onclick="startLesson(0)"><div class="mod-icon">📋</div><div class="mod-info"><strong>O que é EPI?</strong><span>Definição e NR-06</span></div><div class="mod-status" id="ms-0">▶️</div></div>
+      <div class="module-item" id="mod-1" onclick="startLesson(1)"><div class="mod-icon">🤝</div><div class="mod-info"><strong>Responsabilidades</strong><span>Empresa, motorista e fabricante</span></div><div class="mod-status" id="ms-1">🔒</div></div>
+      <div class="module-item" id="mod-2" onclick="startLesson(2)"><div class="mod-icon">🦺</div><div class="mod-info"><strong>Tipos de EPI</strong><span>Proteções por parte do corpo</span></div><div class="mod-status" id="ms-2">🔒</div></div>
+      <div class="module-item" id="mod-3" onclick="startLesson(3)"><div class="mod-icon">⚠️</div><div class="mod-info"><strong>Riscos e EPIs Específicos</strong><span>Motoristas e trabalho externo</span></div><div class="mod-status" id="ms-3">🔒</div></div>
+      <div class="module-item" id="mod-4" onclick="startLesson(4)"><div class="mod-icon">✅</div><div class="mod-info"><strong>Orientações Finais</strong><span>Uso correto e obrigações</span></div><div class="mod-status" id="ms-4">🔒</div></div>
+      <div class="module-item" id="mod-5" onclick="startQuiz()"><div class="mod-icon">📝</div><div class="mod-info"><strong>Quiz Final</strong><span>5 questões · Mínimo 60% para aprovação</span></div><div class="mod-status" id="ms-5">🔒</div></div>
+    </div>
+  </div>
+
+  <!-- LIÇÃO -->
+  <div class="screen" id="screen-lesson">
+    <div class="lesson-top"><div class="step-label" id="lesson-label">Módulo 1</div><h2 id="lesson-title"></h2></div>
+    <div class="lesson-body" id="lesson-body">
+      <div class="lesson-content" id="lc-0">
+        <p class="content-text">Segundo o <strong>Ministério do Trabalho e Emprego (MTE)</strong>, a <strong>NR-06</strong> define EPI como:</p>
+        <div class="highlight-box">"Todo dispositivo ou produto de uso individual, destinado à proteção do trabalhador contra riscos capazes de ameaçar sua segurança e saúde."</div>
+        <p class="content-text">Existe também o <strong>EPC — Equipamento de Proteção Coletiva</strong>, que protege todos os trabalhadores. O EPI é o último recurso quando o EPC não é suficiente.</p>
+        <div class="highlight-box green">💡 <strong>Regra geral:</strong> use EPI sempre que os riscos não puderem ser eliminados coletivamente.</div>
+        <p class="content-text">O empregador é obrigado a fornecer todos os EPIs <strong>gratuitamente</strong>, em perfeito estado de conservação.</p>
+      </div>
+      <div class="lesson-content" id="lc-1">
+        <div class="resp-block"><div class="rb-title">🏢 Empresa (RFR Indy)</div><ul><li>Fornecer EPI adequado ao risco de cada atividade</li><li>Exigir o uso do EPI pelos motoristas</li><li>Treinar e orientar sobre uso correto, guarda e conservação</li><li>Substituir imediatamente quando danificado ou extraviado</li><li>Registrar o fornecimento</li></ul></div>
+        <div class="resp-block"><div class="rb-title">🚛 Motorista (Você)</div><ul><li>Usar o EPI fornecido — sempre e da forma correta</li><li>Utilizar somente para a finalidade destinada</li><li>Guardar e conservar o equipamento</li><li>Avisar ao encarregado quando o EPI estiver danificado</li><li>Cumprir todas as determinações da empresa sobre EPIs</li></ul></div>
+        <div class="highlight-box red">⚠️ Recusar usar EPI pode gerar advertência e até demissão por justa causa.</div>
+      </div>
+      <div class="lesson-content" id="lc-2">
+        <p class="content-text">Os EPIs são classificados pela parte do corpo que protegem:</p>
+        <div class="epi-grid">
+          <div class="epi-item"><span class="epi-emoji">⛑️</span><div class="epi-name">Cabeça</div><div class="epi-risk">Capacete, balaclava</div></div>
+          <div class="epi-item"><span class="epi-emoji">👓</span><div class="epi-name">Olhos e Face</div><div class="epi-risk">Óculos de segurança</div></div>
+          <div class="epi-item"><span class="epi-emoji">🎧</span><div class="epi-name">Ouvidos</div><div class="epi-risk">Protetor auricular</div></div>
+          <div class="epi-item"><span class="epi-emoji">😷</span><div class="epi-name">Respiração</div><div class="epi-risk">Respirador PFF2</div></div>
+          <div class="epi-item"><span class="epi-emoji">🧤</span><div class="epi-name">Mãos</div><div class="epi-risk">Luvas de proteção</div></div>
+          <div class="epi-item"><span class="epi-emoji">👢</span><div class="epi-name">Pés e Pernas</div><div class="epi-risk">Botina, perneira</div></div>
+          <div class="epi-item"><span class="epi-emoji">🦺</span><div class="epi-name">Tronco</div><div class="epi-risk">Avental, colete</div></div>
+          <div class="epi-item"><span class="epi-emoji">🔒</span><div class="epi-name">Quedas</div><div class="epi-risk">Cinto de segurança</div></div>
+        </div>
+        <div class="highlight-box">Todo EPI deve ter o <strong>CA — Certificado de Aprovação</strong> do Ministério do Trabalho.</div>
+      </div>
+      <div class="lesson-content" id="lc-3">
+        <p class="content-text">Como motorista externo da RFR, você está exposto a riscos específicos:</p>
+        <div class="resp-block"><div class="rb-title">☀️ Trabalho ao Ar Livre</div><ul><li>Protetor solar fator ≥ 30</li><li>Óculos de sol com proteção UV</li><li>Boné/capacete — exposição solar prolongada</li></ul></div>
+        <div class="resp-block"><div class="rb-title">🗑️ Coleta de Caçambas e Resíduos</div><ul><li>Luvas de raspa — proteção mecânica e química</li><li>Botina com biqueira de aço — queda de objetos</li><li>Óculos de segurança — projeção de partículas</li><li>Balaclava — poeira e temperatura</li></ul></div>
+        <div class="resp-block"><div class="rb-title">🔊 Exposição ao Ruído</div><ul><li>Protetor auricular — limite máximo: 85 dB em 8h</li></ul></div>
+        <div class="highlight-box green">✅ Mantenha sempre os EPIs no caminhão. Você é responsável por eles!</div>
+      </div>
+      <div class="lesson-content" id="lc-4">
+        <div class="highlight-box green">🏆 Os EPIs evitam acidentes e minimizam lesões graves. USE EPI E PRESERVE SUA VIDA!</div>
+        <div class="resp-block"><div class="rb-title">📌 Regras Importantes</div><ul><li>O uso de EPI é <strong>obrigatório</strong> — não é opcional</li><li>EPI danificado? Comunique imediatamente e solicite troca</li><li>Ao receber EPI novo, assine a ficha de controle</li><li>Acidente de trabalho? Comunique o SSMA e o RH imediatamente</li><li>Nunca empreste seu EPI para outra pessoa</li></ul></div>
+        <div class="resp-block"><div class="rb-title">📞 Em caso de acidente</div><ul><li>Comunique o supervisor imediatamente</li><li>Não movimente o local sem orientação</li><li>Preencha o registro de ocorrência</li><li>Busque atendimento médico se necessário</li></ul></div>
+        <div class="highlight-box red">⚠️ Trabalhar sem EPI é infração à NR-06 e pode causar acidentes graves ou fatais.</div>
+      </div>
+    </div>
+    <div class="lesson-nav">
+      <button class="btn-prev" id="btn-lesson-back" onclick="lessonBack()">← Voltar</button>
+      <button class="btn-next" id="btn-lesson-next" onclick="lessonNext()">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header"><div class="quiz-counter" id="quiz-counter">Questão 1 de 5</div><div class="quiz-question" id="quiz-question"></div></div>
+    <div class="quiz-body"><div class="quiz-options" id="quiz-options"></div><div class="quiz-feedback" id="quiz-feedback"></div></div>
+    <div class="quiz-nav"><button class="btn-next" id="btn-quiz-next" onclick="quizNext()" style="display:none">Próxima →</button></div>
+  </div>
+
+  <!-- CERTIFICADO TELA -->
+  <div class="screen" id="screen-cert">
+    <div class="cert-screen">
+      <div class="cert-trophy" id="cert-trophy">🏆</div>
+      <h2 id="cert-title">Parabéns!</h2>
+      <p class="cert-sub" id="cert-sub"></p>
+
+      <!-- ASSINATURA DO PARTICIPANTE -->
+      <div class="assinatura-box">
+        <div class="assinatura-label">✍️ Sua assinatura</div>
+        <div class="assinatura-canvas-wrap">
+          <canvas id="assinatura-canvas" width="800" height="100"></canvas>
+          <div class="assinatura-hint" id="assinatura-hint">Assine aqui com o dedo ou mouse</div>
+        </div>
+        <button class="assinatura-clear" onclick="limparAssinatura()">🗑️ Limpar</button>
+      </div>
+
+      <div class="saving-msg" id="saving-msg">Salvando resultado...</div>
+      <button class="btn-main" onclick="gerarCertificado()" style="background:var(--teal);margin-bottom:10px;">📄 Gerar Certificado Completo</button>
+      <button class="btn-main" onclick="showMenu()">Revisar Módulos</button>
+      <button class="btn-secondary" onclick="restartQuiz()">Refazer Quiz</button>
+    </div>
+  </div>
+</div>
+
+<!-- CERTIFICADO PARA IMPRESSÃO (oculto na tela) -->
+<div id="cert-print-area">
+
+  <!-- FRENTE DO CERTIFICADO -->
+  <div class="cert-doc">
+    <div class="watermark">RFR INDY</div>
+    <div class="top-bar">
+      <div class="empresa">RFR INDY RECYCLING COMERCIO DE RESIDUOS LTDA — CNPJ: 02.298.244/0001-28</div>
+      <div class="cnpj">Saúde e Segurança do Trabalho — SSMA</div>
+    </div>
+    <div class="cert-body">
+      <div class="cert-logos">
+        <div class="sesmt-badge"><span class="cross">✚</span>SESMT<br>SEGURANÇA<br>DO TRABALHO</div>
+        <div class="cert-title">Certificado</div>
+        <div class="rfr-badge">RFR<small>RECYCLING</small></div>
+      </div>
+      <div class="cert-divider"></div>
+      <p class="cert-texto">A Empresa RFR INDY RECYCLING COMERCIO DE RESIDUOS LTDA. Certifica que</p>
+      <div class="cert-nome" id="cp-nome"></div>
+      <div class="cert-cargo-label" id="cp-cargo">Cargo: —</div>
+      <p class="cert-texto">concluiu com aproveitamento satisfatório o treinamento de</p>
+      <div class="cert-treinamento">"Treinamento da NR-6 – Equipamento de Proteção Individual – EPI"</div>
+      <p class="cert-info">cumprindo a carga horária de 04 horas e conteúdo programático, conforme exigências da norma<br>regulamentadora NR-6, em acordo com o Ministério do Trabalho e Emprego.</p>
+      <div class="cert-local-data">
+        <div class="data-txt" id="cp-data">Indaiatuba, —</div>
+        <div class="cert-aproveitamento"><div class="pct" id="cp-pct">—</div><div class="pct-label">Aproveitamento</div></div>
+      </div>
+      <div class="assinaturas">
+        <div class="ass-col">
+          <img id="cp-ass-instrutor" class="ass-img" src="" alt="assinatura instrutor" style="display:none;">
+          <div class="ass-linha"></div>
+          <div class="ass-nome">Eliane de Freitas</div>
+          <div class="ass-info">Instrutora de Segurança do Trabalho<br>Engenheira Ambiental<br>Segurança do Trabalho<br>Registro MTE Nº 0046435/SP</div>
+        </div>
+        <div class="ass-col">
+          <img id="cp-ass-participante" class="ass-img" src="" alt="assinatura participante">
+          <div class="ass-linha"></div>
+          <div class="ass-nome" id="cp-ass-nome">—</div>
+          <div class="ass-info">Participante</div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      Treinamento realizado em: <span id="cp-data2">—</span> | Modalidade: EAD Online | Válido conforme NR-06/MTE<br>
+      <span>www.rfrindy.com.br — SSMA — Segurança, Saúde e Meio Ambiente</span>
+    </div>
+  </div>
+
+  <!-- VERSO — CONTEÚDO PROGRAMÁTICO -->
+  <div class="cert-verso">
+    <div class="vt-bar">
+      <h2>CONTEÚDO PROGRAMÁTICO — NR-6 (EPI)</h2>
+      <p>Treinamento de Equipamento de Proteção Individual — RFR Indy Recycling</p>
+    </div>
+    <div class="vt-body">
+      <div class="vt-logos" style="margin-bottom:12px;">
+        <div class="sesmt-badge" style="width:50px;height:50px;font-size:6px;"><span style="font-size:16px;">✚</span>SESMT<br>SEGURANÇA<br>TRABALHO</div>
+        <div>
+          <div class="vt-title">Conteúdo Programático</div>
+          <div class="vt-subtitle">Treinamento NR-06 — EPI · RFR Indy Recycling · Carga Horária: 04 horas</div>
+        </div>
+        <div class="rfr-badge" style="font-size:16px;">RFR<small style="font-size:8px;">RECYCLING</small></div>
+      </div>
+      <div class="vt-grid">
+        <div class="vt-item"><h4>1. Introdução aos EPIs</h4><ul><li>Conceitos básicos de Segurança do Trabalho</li><li>Obrigações do empregador e do trabalhador (NR-6)</li><li>Responsabilidades quanto ao uso, fornecimento e controle de EPI</li></ul></div>
+        <div class="vt-item"><h4>7. Inspeção e Identificação de Danos</h4><ul><li>Como inspecionar EPIs</li><li>Critérios para substituição</li><li>Registro de inspeção</li></ul></div>
+        <div class="vt-item"><h4>2. Tipos de EPIs</h4><ul><li>Proteção da cabeça, auditiva, respiratória</li><li>Proteção dos olhos, mãos, pés, tronco</li><li>Proteção contra quedas (SPCQ)</li><li>EPIs específicos por atividade</li></ul></div>
+        <div class="vt-item"><h4>8. Limitações do EPI</h4><ul><li>O que o EPI não substitui</li><li>Limitações técnicas e riscos residuais</li></ul></div>
+        <div class="vt-item"><h4>3. Certificação e CA</h4><ul><li>O que é o Certificado de Aprovação</li><li>Validade, renovação e cancelamento</li><li>Consulta de CA e rastreabilidade</li></ul></div>
+        <div class="vt-item"><h4>9. Consequências do Não Uso</h4><ul><li>Acidentes típicos</li><li>Responsabilidade disciplinar e legal</li><li>Impactos legais e trabalhistas</li></ul></div>
+        <div class="vt-item"><h4>4. Seleção Adequada do EPI</h4><ul><li>Identificação de riscos</li><li>Critérios para escolha do EPI adequado</li><li>Compatibilidade entre diferentes equipamentos</li></ul></div>
+        <div class="vt-item"><h4>10. Procedimentos Internos da Empresa</h4><ul><li>Sistema de entrega e controle</li><li>Recolhimento, troca e devolução</li><li>Checklist de inspeção</li></ul></div>
+        <div class="vt-item"><h4>5. Uso Correto dos EPIs</h4><ul><li>Como vestir, ajustar e utilizar cada equipamento</li><li>Restrições e cuidados</li><li>Demonstrações práticas</li></ul></div>
+        <div class="vt-item"><h4>11. Avaliação Final</h4><ul><li>Avaliação técnica</li><li>Registro de participação</li><li>Critérios mínimos para certificação</li></ul></div>
+        <div class="vt-item"><h4>6. Higienização, Guarda e Conservação</h4><ul><li>Limpeza e higienização por tipo de EPI</li><li>Cuidados para prolongar vida útil</li><li>Procedimentos de recolhimento e descarte de EPI danificado</li></ul></div>
+      </div>
+    </div>
+    <div class="vt-footer">
+      Carga Horária: 04 horas | Modalidade: EAD Online | Indaiatuba - SP<br>
+      <span>RFR Indy Recycling Comércio de Resíduos Ltda. — CNPJ: 02.298.244/0001-28 — www.rfrindy.com.br</span>
+    </div>
+  </div>
+
+</div><!-- fim cert-print-area -->
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCPxw2L39B3Zbe6SWGSBlmOSCI3AmOByaI",
+  authDomain: "treinamento-epi.firebaseapp.com",
+  projectId: "treinamento-epi",
+  storageBucket: "treinamento-epi.firebasestorage.app",
+  messagingSenderId: "343697080767",
+  appId: "1:343697080767:web:9fe77e1eadcc1afe1ce10a"
+};
+
+let db = null;
+try { const app = initializeApp(firebaseConfig); db = getFirestore(app); } catch(e){}
+
+window.salvarNoFirebase = async function(dados){
+  const msg = document.getElementById('saving-msg');
+  if(!db){ msg.className='saving-msg err'; msg.textContent='⚠️ Firebase não conectado.'; return; }
+  try{
+    msg.className='saving-msg'; msg.textContent='Salvando resultado...';
+    await addDoc(collection(db,'resultados_epi'), dados);
+    msg.className='saving-msg ok';
+    msg.textContent = dados.aprovado ? '✅ Resultado salvo com sucesso!' : '⚠️ Resultado salvo. Refaça o quiz para aprovação.';
+  }catch(e){
+    msg.className='saving-msg err'; msg.textContent='⚠️ Erro ao salvar: '+e.message;
+  }
+};
+</script>
+
+<script>
+var motoristaNome='', motoristaCargo='', motoristaPct=0;
+var completedLessons=[], currentLesson=0;
+var quizIndex=0, quizScore=0, quizAnswered=false, quizRespostas=[];
+var assinaturaCanvas, assinaturaCtx, assinadoOk=false, desenhando=false;
+
+var quizData=[
+  {q:"O que é um EPI segundo a NR-06?",opts:["Equipamento coletivo para proteção do ambiente","Dispositivo de uso individual para proteção do trabalhador","Ferramenta de trabalho fornecida pela empresa","Sinalização de segurança no local de trabalho"],correct:1,feedback:"EPI é todo dispositivo de uso individual destinado à proteção do trabalhador contra riscos à sua saúde e segurança, conforme a NR-06."},
+  {q:"Qual é a responsabilidade do motorista em relação ao EPI?",opts:["Usar somente quando achar necessário","Emprestar para colegas quando precisarem","Usar corretamente, guardar, conservar e avisar se danificado","Comprar seu próprio EPI"],correct:2,feedback:"O motorista deve usar o EPI corretamente, conservar e comunicar ao supervisor quando estiver danificado."},
+  {q:"Qual é o limite máximo de exposição ao ruído em 8 horas de trabalho?",opts:["65 decibéis","75 decibéis","85 decibéis","100 decibéis"],correct:2,feedback:"O limite máximo é de 85 dB em 8 horas. Acima disso, o protetor auricular é obrigatório."},
+  {q:"O que significa o CA (Certificado de Aprovação) no EPI?",opts:["É apenas uma formalidade burocrática","O EPI foi aprovado e testado para proteger contra os riscos indicados","O EPI foi fabricado no Brasil","O EPI tem desconto na compra"],correct:1,feedback:"O CA garante que o EPI foi testado e aprovado pelo Ministério do Trabalho, assegurando proteção real."},
+  {q:"Na coleta de caçambas, qual EPI é essencial para proteger os pés?",opts:["Chinelo fechado","Tênis esportivo","Botina de segurança com biqueira de aço","Bota de borracha simples"],correct:2,feedback:"A botina com biqueira de aço protege contra queda de objetos pesados, perfurações e escorregamentos — riscos comuns na coleta externa."}
+];
+var lessonTitles=["O que é EPI?","Responsabilidades","Tipos de EPI","Riscos e EPIs Específicos","Orientações Finais"];
+
+function submitId(){
+  var nome=document.getElementById('input-nome').value.trim();
+  var cargo=document.getElementById('input-cargo').value.trim();
+  var ok=true;
+  if(!nome||nome.length<3){document.getElementById('input-nome').classList.add('error');document.getElementById('err-nome').style.display='block';ok=false;}
+  else{document.getElementById('input-nome').classList.remove('error');document.getElementById('err-nome').style.display='none';}
+  if(!cargo){document.getElementById('input-cargo').classList.add('error');document.getElementById('err-cargo').style.display='block';ok=false;}
+  else{document.getElementById('input-cargo').classList.remove('error');document.getElementById('err-cargo').style.display='none';}
+  if(!ok)return;
+  motoristaNome=nome; motoristaCargo=cargo;
+  document.getElementById('welcome-title').textContent='Olá, '+nome.split(' ')[0]+'!';
+  showScreen('screen-welcome');
+}
+function updateProgress(){var pct=Math.round((completedLessons.length/6)*100);document.getElementById('progress-fill').style.width=pct+'%';document.getElementById('header-badge').textContent=pct+'%';}
+function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});document.getElementById(id).classList.add('active');}
+function goToMenu(){updateModuleMenu();showScreen('screen-menu');}
+function showMenu(){updateModuleMenu();showScreen('screen-menu');}
+function updateModuleMenu(){
+  document.getElementById('menu-nome-label').textContent=motoristaNome+' · '+motoristaCargo;
+  for(var i=0;i<5;i++){
+    var item=document.getElementById('mod-'+i),status=document.getElementById('ms-'+i);
+    item.classList.remove('done','current');
+    if(completedLessons.indexOf(i)>=0){status.textContent='✅';item.classList.add('done');}
+    else if(i===0||completedLessons.indexOf(i-1)>=0){status.textContent='▶️';item.classList.add('current');}
+    else status.textContent='🔒';
+  }
+  var qs=document.getElementById('ms-5'),qi=document.getElementById('mod-5');
+  qi.classList.remove('current');
+  if(completedLessons.length>=5){qs.textContent=completedLessons.indexOf(5)>=0?'✅':'▶️';qi.classList.add('current');}
+  else qs.textContent='🔒';
+  updateProgress();
+}
+function startLesson(idx){
+  if(idx>0&&completedLessons.indexOf(idx-1)<0){alert('Complete o módulo anterior primeiro!');return;}
+  currentLesson=idx;
+  document.getElementById('lesson-label').textContent='Módulo '+(idx+1)+' de 5';
+  document.getElementById('lesson-title').textContent=lessonTitles[idx];
+  document.querySelectorAll('.lesson-content').forEach(function(lc){lc.classList.remove('active');});
+  document.getElementById('lc-'+idx).classList.add('active');
+  document.getElementById('lesson-body').scrollTop=0;
+  document.getElementById('btn-lesson-back').textContent=idx===0?'← Menu':'← Voltar';
+  document.getElementById('btn-lesson-next').textContent=idx===4?'Concluir ✓':'Próximo →';
+  showScreen('screen-lesson');
+}
+function lessonBack(){if(currentLesson===0)showMenu();else startLesson(currentLesson-1);}
+function lessonNext(){
+  if(completedLessons.indexOf(currentLesson)<0)completedLessons.push(currentLesson);
+  if(currentLesson<4)startLesson(currentLesson+1);
+  else{updateModuleMenu();showMenu();}
+}
+function startQuiz(){
+  if(completedLessons.length<5){alert('Conclua todos os módulos antes do quiz!');return;}
+  quizIndex=0;quizScore=0;quizRespostas=[];showQuizQuestion();showScreen('screen-quiz');
+}
+function restartQuiz(){quizIndex=0;quizScore=0;quizRespostas=[];showQuizQuestion();showScreen('screen-quiz');}
+function showQuizQuestion(){
+  quizAnswered=false;
+  var q=quizData[quizIndex];
+  document.getElementById('quiz-counter').textContent='Questão '+(quizIndex+1)+' de '+quizData.length;
+  document.getElementById('quiz-question').textContent=q.q;
+  var optDiv=document.getElementById('quiz-options');optDiv.innerHTML='';
+  q.opts.forEach(function(opt,i){
+    var btn=document.createElement('button');btn.className='quiz-option';btn.textContent=opt;
+    btn.onclick=function(){selectAnswer(i);};optDiv.appendChild(btn);
+  });
+  document.getElementById('quiz-feedback').style.display='none';
+  document.getElementById('btn-quiz-next').style.display='none';
+}
+function selectAnswer(idx){
+  if(quizAnswered)return;quizAnswered=true;
+  var q=quizData[quizIndex];
+  var opts=document.querySelectorAll('.quiz-option');opts.forEach(function(o){o.disabled=true;});
+  var acertou=(idx===q.correct);
+  if(acertou){opts[idx].classList.add('correct');quizScore++;}
+  else{opts[idx].classList.add('wrong');opts[q.correct].classList.add('correct');}
+  quizRespostas.push({pergunta:q.q,escolhida:q.opts[idx],correta:q.opts[q.correct],acertou:acertou});
+  var fb=document.getElementById('quiz-feedback');
+  fb.className='quiz-feedback '+(acertou?'correct':'wrong');
+  fb.innerHTML=(acertou?'✅ ':'❌ Não era essa. ')+q.feedback;fb.style.display='block';
+  var nb=document.getElementById('btn-quiz-next');nb.style.display='block';
+  nb.textContent=quizIndex===quizData.length-1?'Ver Resultado →':'Próxima Questão →';
+}
+function quizNext(){quizIndex++;if(quizIndex>=quizData.length)showCertificate();else showQuizQuestion();}
+
+function showCertificate(){
+  if(completedLessons.indexOf(5)<0)completedLessons.push(5);
+  var pct=Math.round((quizScore/quizData.length)*100);
+  motoristaPct=pct;
+  var aprovado=pct>=60;
+  var hoje=new Date();
+  var dateStr=hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('cert-trophy').textContent=aprovado?'🏆':'📋';
+  document.getElementById('cert-title').textContent=aprovado?'Parabéns, '+motoristaNome.split(' ')[0]+'!':'Treinamento Concluído';
+  document.getElementById('cert-sub').textContent=aprovado?'Você foi aprovado! Assine abaixo e gere seu certificado.':'Você não atingiu 60%. Refaça o quiz para aprovação.';
+  updateProgress();
+  showScreen('screen-cert');
+  initAssinatura();
+  if(window.salvarNoFirebase){
+    window.salvarNoFirebase({
+      nome:motoristaNome,cargo:motoristaCargo,
+      data:hoje.toISOString(),dataFormatada:dateStr,
+      pontuacao:pct,acertos:quizScore,total:quizData.length,
+      aprovado:aprovado,respostas:quizRespostas,timestamp:Date.now()
+    });
+  }
+}
+
+// ASSINATURA
+function initAssinatura(){
+  assinaturaCanvas=document.getElementById('assinatura-canvas');
+  if(!assinaturaCanvas)return;
+  assinaturaCtx=assinaturaCanvas.getContext('2d');
+  assinaturaCtx.strokeStyle='#1A1A1A';
+  assinaturaCtx.lineWidth=2.5;
+  assinaturaCtx.lineCap='round';
+  assinaturaCtx.lineJoin='round';
+  function getPos(e){
+    var rect=assinaturaCanvas.getBoundingClientRect();
+    var scaleX=assinaturaCanvas.width/rect.width;
+    var scaleY=assinaturaCanvas.height/rect.height;
+    var src=e.touches?e.touches[0]:e;
+    return{x:(src.clientX-rect.left)*scaleX,y:(src.clientY-rect.top)*scaleY};
+  }
+  function start(e){e.preventDefault();desenhando=true;var p=getPos(e);assinaturaCtx.beginPath();assinaturaCtx.moveTo(p.x,p.y);}
+  function move(e){e.preventDefault();if(!desenhando)return;var p=getPos(e);assinaturaCtx.lineTo(p.x,p.y);assinaturaCtx.stroke();document.getElementById('assinatura-hint').style.display='none';assinadoOk=true;}
+  function stop(e){e.preventDefault();desenhando=false;}
+  assinaturaCanvas.addEventListener('mousedown',start);
+  assinaturaCanvas.addEventListener('mousemove',move);
+  assinaturaCanvas.addEventListener('mouseup',stop);
+  assinaturaCanvas.addEventListener('touchstart',start,{passive:false});
+  assinaturaCanvas.addEventListener('touchmove',move,{passive:false});
+  assinaturaCanvas.addEventListener('touchend',stop,{passive:false});
+}
+function limparAssinatura(){
+  if(assinaturaCtx)assinaturaCtx.clearRect(0,0,assinaturaCanvas.width,assinaturaCanvas.height);
+  document.getElementById('assinatura-hint').style.display='block';
+  assinadoOk=false;
+}
+
+function gerarCertificado(){
+  if(!assinadoOk){alert('Por favor, assine o certificado antes de gerar!');return;}
+  var hoje=new Date();
+  var dateStr='Indaiatuba, '+hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})+'.';
+  var dateStr2=hoje.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+
+  // Preencher dados no template oculto
+  document.getElementById('cp-nome').textContent=motoristaNome.toUpperCase();
+  document.getElementById('cp-cargo').textContent='Cargo: '+motoristaCargo;
+  document.getElementById('cp-data').textContent=dateStr;
+  document.getElementById('cp-data2').textContent=dateStr2;
+  document.getElementById('cp-pct').textContent=motoristaPct+'%';
+  document.getElementById('cp-ass-nome').textContent=motoristaNome.toUpperCase();
+
+  // Assinatura do participante
+  var assImg=document.getElementById('cp-ass-participante');
+  assImg.src=assinaturaCanvas.toDataURL('image/png');
+  assImg.style.display='block';
+
+  // Gerar HTML do certificado como blob
+  var estilos = document.querySelector('style').innerHTML;
+  var certConteudo = document.getElementById('cert-print-area').innerHTML;
+
+  var htmlCompleto = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
+    + '<title>Certificado NR-06 — ' + motoristaNome + '</title>'
+    + '<style>' + estilos + '</style>'
+    + '</head><body style="background:white;margin:0;padding:0;">'
+    + certConteudo
+    + '</body></html>';
+
+  var blob = new Blob([htmlCompleto], {type: 'text/html;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'Certificado_NR06_' + motoristaNome.replace(/\s+/g,'_') + '.html';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+  alert('✅ Certificado baixado! Abra o arquivo e use Ctrl+P (ou Imprimir) para salvar como PDF.');
+}
+
+updateModuleMenu();
+</script>
+</body>
+</html>
